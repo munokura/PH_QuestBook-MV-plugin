@@ -1,3 +1,207 @@
+/*
+PH - Quest Book
+-----------------------------------------------------------------------------
+This work is licensed under the Creative Commons Attribution 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/
+-----------------------------------------------------------------------------
+ */
+
+/*:ja
+ * @plugindesc このプラグインを使うと、コモンイベントとプラグインコマンドでクエストブックの作成・管理ができるようになります。
+ * @author PrimeHover
+ * @version 2.0.0
+ * @date 05/19/2016
+ * 
+ * @param >>>Screen Options>>>
+ * @text >>>画面のオプション
+ * @default
+ * 
+ * @param Show in Menu
+ * @text メニューに表示
+ * @type number
+ * @min 0
+ * @max 1
+ * @desc メニューにクエストブックを表示 (1:表示, 0:非表示) (Yanfly Main Menu Managerを使用している場合は無視)
+ * @default 1
+ * 
+ * @param Name in Menu
+ * @text メニューの表示名
+ * @type string
+ * @desc メニューのクエストブックの表示名(Yanfly Main Menu Managerを使用している場合は無視)
+ * @default クエストブック
+ * 
+ * @param Show Icons
+ * @text アイコンを表示
+ * @type number
+ * @min 0
+ * @max 1
+ * @desc クエスト名の前にアイコンを表示する(1: はい、0: いいえ)
+ * @default 1
+ * 
+ * @param Background Image
+ * @text 背景画像
+ * @type file
+ * @require 1
+ * @dir img/pictures
+ * @desc クエストブックの背景画像(PNG画像のみ)
+ * @default
+ * 
+ * @param >>>Category Options>>>
+ * @text >>>カテゴリオプション
+ * @default
+ * 
+ * @param Category IDs
+ * @text カテゴリID
+ * @type string
+ * @desc 表示するカテゴリのIDをカンマ(,)で区切って指定します。
+ * @default main, sub, completed, failed
+ * 
+ * @param Category Texts
+ * @text カテゴリテキスト
+ * @type string
+ * @desc カンマ(,)で区切って表示されるカテゴリのテキスト(カテゴリIDと同じ順番でなければなりません)
+ * @default メイン, サブ, 完了, 失敗
+ * 
+ * @param Category Icons ID
+ * @text カテゴリアイコンID
+ * @type string
+ * @desc 表示されるカテゴリのアイコンはカンマ(,)で区切って表示されます(カテゴリIDと同じ順番で表示されます)
+ * @default 312, 311, 310, 309
+ * 
+ * @param >>>Default Options>>>
+ * @text >>>デフォルトのオプション
+ * @default
+ * 
+ * @param Icon Default Quest
+ * @text デフォルトアイコン
+ * @type string
+ * @desc クエストが特定のカテゴリを持たない場合に表示されるアイコンのID
+ * @default 312
+ * 
+ * @param Text Default Quest
+ * @text デフォルトテキスト
+ * @desc クエストに特定のカテゴリがない場合に表示されるデフォルトのテキスト
+ * @default デフォルト
+ * 
+ * @param Text No Quests
+ * @text クエストなしテキスト
+ * @type string
+ * @desc クエストがない場合に表示されるテキスト
+ * @default クエストはありません
+ * 
+ * @param >>>Additional Options>>>
+ * @text >>>追加オプション
+ * @default
+ * 
+ * @param Text Title
+ * @text 表示タイトル
+ * @type string
+ * @desc クエストブックの表示タイトル
+ * @default クエストブック
+ * 
+ * @param Text Title Color
+ * @text タイトルテキストの色
+ * @type string
+ * @desc タイトルの文字色(制御文字の色コード)
+ * @default 0
+ * 
+ * @help
+ * 翻訳:ムノクラ
+ * https://fungamemake.com/
+ * https://twitter.com/munokura/
+ * 
+ * プラグインコマンド:
+ *    PHQuestBook add クエストのタイトル
+ *         ブックにクエストを追加
+ *    PHQuestBook remove クエストのタイトル
+ *         ブックからクエストを削除する
+ *    PHQuestBook clear
+ *         クエストブックをクリア
+ *    PHQuestBook show
+ *         クエストブックを開く
+ *    PHQuestBook change クエストのタイトル|カテゴリID
+ *         クエストのカテゴリを変更する
+ *    PHQuestBook update クエストのタイトル
+ *         存在するクエストを更新
+ * 
+ * ========================================
+ * 
+ * 使用方法:
+ * 
+ *    カテゴリーの作成:
+ *    - カテゴリを作成するためには、3つのパラメータを設定する必要があります。
+ *      [カテゴリID]、[カテゴリ表示名]、[カテゴリアイコンID]です。
+ *      ここでは、これら3つのパラメータの例を示します。
+ * 
+ * 例
+ *        [カテゴリID]:         main, sub, completed, failed
+ *        [カテゴリ表示名]:     メイン,サブ,完了,失敗
+ *        [カテゴリアイコンID]: 312, 311, 310, 309
+ * 
+ *    - 上の例では、[カテゴリID]の「primary」がカテゴリになります。
+ *      クエストがこのカテゴリにあるときに表示されるテキストは「メイン」で、
+ *      このカテゴリのデフォルトアイコンはID「312」です。
+ *    - カテゴリは好きなだけ持つことができます。
+ *      ID、名前、アイコンはカンマ(,)で区切る必要があります。
+ *    - 重要: ID、テキスト、アイコンの数が同じであることを確認してください。
+ *      つまり、4つのIDがある場合、4つのテキストと4つのアイコンが必要です。
+ * 
+ * 
+ *    クエストを書く:
+ *    - データベースを開き、「コモンイベント」に移動します。
+ *    - 「PHQuestBook」という名前のコモンイベントを作成します(引用符なし)。
+ *    - 1つまたは複数の注釈を作成してクエストを作成します。
+ *    - 注釈はパターンに沿ったものである必要があります。
+ * 
+ *        {クエストタイトル|カテゴリID|アイコンID}
+ *        クエストの説明。
+ * 
+ *    - 「カテゴリID」は任意ですが、クエストの振り分けに便利です。
+ *      「カテゴリID」パラメータで、無制限にカテゴリを設定することができます。
+ *      クエストのカテゴリを指定しない場合「デフォルト」に設定されます。
+ *    - 「アイコンID」も任意です。
+ *      このクエストで表示させたいアイコンのIDを入れることができます。
+ *      指定しない場合、そのクエストのカテゴリのデフォルトが表示されます。
+ *    - 1つのクエストを意味する注釈を複数書くことができます
+ *      (注釈は6行だけで書く必要はありません。)
+ *    - クエストの説明文には、制御文字(\C[n],\I[n],\V[n]など)が使えます。
+ *    - アイテム、武器、防具、敵、アクターの名前を取得するために、
+ *      特殊なタグを使用することができます。
+ *      クエストの説明文に、
+ *      <enemy:ID>, <actor:ID>, <item:ID>, <weapon:ID> , <armor:ID>
+ *      のタグを使って、特定のアイテムの名前を説明文に表示できます。
+ *      「ID」を対応する番号に変更してください。
+ *    - 「break-on-update」というタグがあります。
+ *      これを使うと、同じクエストの内容が全て非表示になり、
+ *      プラグインコマンド「PHQuestBook update クエストのタイトル」を
+ *      呼び出すと、クエストブックに表示されます。
+ *    - 「break-on-update」は何回でも使えます。
+ *      そして、更新のためにプラグインコマンドを呼び出すと、
+ *      必ずクエストの新しい部分がプレイヤーに表示されるようになります。
+ *      (プレイヤーがクエストを完了するたびに、同じクエストが更新され、
+ *      新しいことをしなければならないような「ステップバイステップ」の
+ *      クエストを作りたい場合に、向いている機能です)。
+ * 
+ *    クエストブックに登録する:
+ *    - クエストをブックに登録するには、マップ内にイベントを作成し、
+ *      「プラグインコマンド」からクエスト追加用のコマンドを入力します。
+ *         例:
+ *            PHQuestBook add クエストのタイトル
+ *    - クエストのステータスやカテゴリを確認するには、
+ *      以下のスクリプトコマンドを使用します。
+ * 
+ *         PHPlugins.PHQuests.isActive("クエストのタイトル");
+ *         PHPlugins.PHQuests.is("クエストのタイトル", "カテゴリID");
+ * 
+ * 
+ * ========================================
+ * 
+ * 留意事項:
+ * 
+ * "クエストタイトルの例 "は、単一の単語や引用符で囲う必要はなく、
+ * 1つのタイトルを意味する複数の単語であっても構いません。
+ * 
+ */
 /*:
 
  PH - Quest Book
@@ -236,17 +440,15 @@ PHPlugins.Params.PHQuestCategoryIcons = String(PHPlugins.Parameters['Category Ic
                 str = questVar[i].parameters[0].trim();
                 if (this.checkTitle(str)) {
                     header = this.separateTitleAndType(str);
-                    this.quests.push(
-                        {
-                            title: header[0],
-                            icon: header[1],
-                            type: header[2],
-                            descriptions: [''],
-                            reward: [],
-                            updates: 0,
-                            active: false
-                        }
-                    );
+                    this.quests.push({
+                        title: header[0],
+                        icon: header[1],
+                        type: header[2],
+                        descriptions: [''],
+                        reward: [],
+                        updates: 0,
+                        active: false
+                    });
                     descriptionIndex = 0;
                     index++;
                 } else if (this.quests[index]) {
@@ -407,7 +609,7 @@ PHPlugins.Params.PHQuestCategoryIcons = String(PHPlugins.Parameters['Category Ic
         var quests = [];
         for (var i = 0; i < this.quests.length; i++) {
             if (this.quests[i].active && this.quests[i].type == this._lastCategory) {
-                quests.push( { quest: this.quests[i], _index: i } );
+                quests.push({ quest: this.quests[i], _index: i });
             }
         }
         return quests;
@@ -598,14 +800,14 @@ PHPlugins.Params.PHQuestCategoryIcons = String(PHPlugins.Parameters['Category Ic
  */
 if (PHPlugins.Params.PHQuestAddToMenu == 1 && (typeof Yanfly === "undefined" || typeof Yanfly.MMM === "undefined")) {
     var Window_MenuCommand_prototype_addOriginalCommands = Window_MenuCommand.prototype.addOriginalCommands;
-    Window_MenuCommand.prototype.addOriginalCommands = function () {
+    Window_MenuCommand.prototype.addOriginalCommands = function() {
         Window_MenuCommand_prototype_addOriginalCommands.call(this);
         this.addCommand(PHPlugins.Params.PHQuestMenuText, 'questbook');
     };
     var _Scene_Menu_prototype_createCommandWindow = Scene_Menu.prototype.createCommandWindow;
-    Scene_Menu.prototype.createCommandWindow = function () {
+    Scene_Menu.prototype.createCommandWindow = function() {
         _Scene_Menu_prototype_createCommandWindow.call(this);
-        this._commandWindow.setHandler('questbook', function () {
+        this._commandWindow.setHandler('questbook', function() {
             SceneManager.push(Scene_QuestBook);
         });
     };
@@ -990,7 +1192,7 @@ Scene_QuestBook.prototype.create = function() {
 };
 
 if (PHPlugins.Params.PHQuestBackgroundImage != '') {
-    Scene_QuestBook.prototype.createBackground = function () {
+    Scene_QuestBook.prototype.createBackground = function() {
         this._backgroundSprite = new Sprite();
         this._backgroundSprite.bitmap = ImageManager.loadPicture(PHPlugins.Params.PHQuestBackgroundImage);
         this.addChild(this._backgroundSprite);
